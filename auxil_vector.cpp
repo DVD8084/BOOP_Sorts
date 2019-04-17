@@ -2,13 +2,44 @@
 // Created by DVD on 16.04.2019.
 //
 
-#include "auxil.h"
+#include "auxil_vector.h"
 
 #include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <random>
 #include <vector>
+
+ImVec4 StateColor(PTR_STATE color) {
+    static const ImVec4 colors[STATE_AMOUNT] = {
+            ImVec4(0.25f, 0.50f, 0.50f, 1.00f), //IDLE
+            ImVec4(0.25f, 1.00f, 0.25f, 1.00f), //READ
+            ImVec4(1.00f, 1.00f, 0.25f, 1.00f), //NOTE
+            ImVec4(1.00f, 0.25f, 0.25f, 1.00f)  //SET
+    };
+    return colors[color];
+}
+
+void Pause(bool &paused) {
+    paused = true;
+    while (paused) {}
+}
+
+void SetState(uint &pointer, int newPointer, bool &paused) {
+    pointer = newPointer;
+    Pause(paused);
+}
+
+void SetState(PTR_STATE &state, PTR_STATE newState, bool &paused) {
+    state = newState;
+    Pause(paused);
+}
+
+void SetState(uint &pointer, int newPointer, PTR_STATE &state, PTR_STATE newState, bool &paused) {
+    pointer = newPointer;
+    state = newState;
+    Pause(paused);
+}
 
 std::vector<int> Shuffle(const uint &size) {
     std::vector<int> values(size, -1);
