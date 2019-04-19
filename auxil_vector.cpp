@@ -25,26 +25,30 @@ void Pause(bool &paused) {
     while (paused) {}
 }
 
-void SetState(uint &pointer, int newPointer, bool &paused) {
-    pointer = newPointer;
-    Pause(paused);
+void Pause(bool &paused, bool &active) {
+    paused = true;
+    while (paused && active) {}
 }
 
-void SetState(PTR_STATE &state, PTR_STATE newState, bool &paused) {
-    state = newState;
-    Pause(paused);
+void SetState(uint &position, int newPosition, bool &paused, bool &simActive) {
+    position = newPosition;
+    Pause(paused, simActive);
 }
 
-void SetState(uint &pointer, int newPointer, PTR_STATE &state, PTR_STATE newState, bool &paused) {
-    pointer = newPointer;
+void SetState(PTR_STATE &state, PTR_STATE newState, bool &paused, bool &simActive) {
     state = newState;
-    Pause(paused);
+    Pause(paused, simActive);
+}
+
+void SetState(uint &position, int newPosition, PTR_STATE &state, PTR_STATE newState, bool &paused, bool &simActive) {
+    position = newPosition;
+    state = newState;
+    Pause(paused, simActive);
 }
 
 std::vector<int> Shuffle(const uint &size) {
     std::vector<int> values(size, -1);
-    for (uint i = 0; i < size; i++)
-    {
+    for (uint i = 0; i < size; i++) {
         values[i] = i;
     }
     std::default_random_engine rnd(std::chrono::system_clock::now().time_since_epoch().count());
@@ -64,7 +68,7 @@ std::vector<int> Shuffle(const uint &size, const std::string &values, const bool
         try {
             i = stoi(value);
         }
-        catch(const std::invalid_argument&) {
+        catch (const std::invalid_argument &) {
             return std::vector<int>();
         }
         pos = values.find(',', pos);
@@ -74,4 +78,14 @@ std::vector<int> Shuffle(const uint &size, const std::string &values, const bool
         std::shuffle(v.begin(), v.end(), rnd);
     }
     return v;
+}
+
+int getMaxLength(const std::vector<int> &vector) {
+    int length = 0;
+    for (int i : vector) {
+        if (std::to_string(i).length() > length) {
+            length = std::to_string(i).length();
+        }
+    }
+    return length;
 }

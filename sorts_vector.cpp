@@ -8,52 +8,45 @@
 
 typedef unsigned int uint;
 
-void SelectionSort(std::vector <int> &vector, uint &pointer, PTR_STATE &state, bool &paused) {
-    SetState(pointer, 0, state, IDLE, paused);
+void SelectionSort(std::vector<int> &vector, uint &position, PTR_STATE &state, bool &paused, bool &simActive) {
+    SetState(position, 0, state, IDLE, paused, simActive);
     uint min;
-    for (uint i = 0; i < vector.size() - 1; i++) {
+    for (uint i = 0; i + 1 < vector.size(); i++) {
         min = i;
-        state = NOTE;
-        SetState(pointer, i, paused);
+        SetState(position, i, state, NOTE, paused, simActive);
         for (uint j = i + 1; j < vector.size(); j++) {
             state = READ;
             if (vector[j] < vector[min]) {
                 state = NOTE;
                 min = j;
             }
-            SetState(pointer, j, paused);
+            SetState(position, j, paused, simActive);
         }
-        state = SET;
-        SetState(pointer, i, paused);
+        SetState(position, i, state, SET, paused, simActive);
         std::swap(vector[i], vector[min]);
-        SetState(pointer, min, paused);
+        SetState(position, min, paused, simActive);
     }
-    pointer = 0;
-    state = IDLE;
+    SetState(position, 0, state, IDLE, paused, simActive);
 }
 
-void BubbleSort(std::vector <int> &vector, uint &pointer, PTR_STATE &state, bool &paused) {
-    SetState(pointer, 0, state, IDLE, paused);
+void BubbleSort(std::vector<int> &vector, uint &position, PTR_STATE &state, bool &paused, bool &simActive) {
+    SetState(position, 0, state, IDLE, paused, simActive);
     bool swapOccured;
-    for (uint i = 0; i < vector.size() - 1; i++) {
+    for (uint i = 0; i + 1 < vector.size(); i++) {
         swapOccured = false;
-        for (uint j = 0; j < vector.size() - i - 1; j++) {
-            state = READ;
-            SetState(pointer, j, paused);
+        for (uint j = 0; j + i + 1 < vector.size(); j++) {
+            SetState(position, j, state, READ, paused, simActive);
             if (vector[j] > vector[j + 1]) {
-                state = SET;
-                SetState(pointer, j, paused);
+                SetState(position, j, state, SET, paused, simActive);
                 std::swap(vector[j], vector[j + 1]);
-                SetState(pointer, j + 1, paused);
+                SetState(position, j + 1, paused, simActive);
                 swapOccured = true;
             }
         }
         if (!swapOccured) {
-            pointer = 0;
-            state = IDLE;
+            SetState(position, 0, state, IDLE, paused, simActive);
             return;
         }
     }
-    pointer = 0;
-    state = IDLE;
+    SetState(position, 0, state, IDLE, paused, simActive);
 }
