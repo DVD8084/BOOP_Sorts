@@ -9,15 +9,14 @@
 #include <iostream>
 #include <thread>
 
-#include "auxil_vector.h"
-#include "sorts_vector.h"
+#include "Vector.h"
+#include "SortVector.h"
 
 #define MAX_ROW_WIDTH 20
 #define MIN_VECTOR_SIZE 2
 #define MAX_VECTOR_SIZE 100
 
-bool
-DisplayAsButtonRow(const std::string &name, const std::vector<int> &vector, uint pointer, PTR_STATE state, int color);
+bool DisplayAsButtonRow(const std::string &name, const SortVector &vector, int color);
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(1280, 800), "Sorts");
@@ -36,24 +35,26 @@ int main() {
 
     sf::Clock deltaClock;
 
-    bool paused;
-
     while (window.isOpen()) {
+
+        static std::thread sortThread;
+        static bool simActive = false;
+
         sf::Event event;
+
         while (window.pollEvent(event)) {
             ImGui::SFML::ProcessEvent(event);
 
             if (event.type == sf::Event::Closed) {
+                simActive = false;
+                sortThread.join();
                 window.close();
             }
         }
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        static std::vector<int> vector;
-
-        static uint pointer = 0;
-        static PTR_STATE state = IDLE;
+        static SortVector vector;
 
         static ALGORITHM algorithm;
         static int size = 10;
@@ -62,18 +63,13 @@ int main() {
         static bool shuffle = true;
         static int color = 0;
 
-        static bool simActive = false;
-
-        static std::thread sortThread;
-
-
         ImGui::Begin("Sorting Algorithms", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
         if (simActive) {
             if (ImGui::Button("Stop the simulation")) {
                 simActive = false;
                 sortThread.join();
-                vector = std::vector<int>(0);
+                vector.Clear();
             }
         } else {
             ImGui::InputInt("Size", &size);
@@ -93,6 +89,8 @@ int main() {
             }
             if (ImGui::Button("Selection Sort"))
                 algorithm = SELECTION;
+            if (ImGui::Button("Insertion Sort"))
+                algorithm = INSERTION;
             if (ImGui::Button("Bubble Sort"))
                 algorithm = BUBBLE;
         }
@@ -102,27 +100,28 @@ int main() {
         if (algorithm != NONE) {
             simActive = true;
             if (setElements) {
-                vector = Shuffle(size, elements, shuffle);
+                vector.Shuffle(size, elements, shuffle);
             } else {
-                vector = Shuffle(size);
+                vector.Shuffle(size);
             }
         }
 
-        if (!vector.empty()) {
+        if (!vector.IsEmpty()) {
             switch (algorithm) {
                 case SELECTION:
-                    sortThread = std::thread(SelectionSort, std::ref(vector), std::ref(pointer), std::ref(state),
-                                             std::ref(paused), std::ref(simActive));
+                    sortThread = std::thread(&SortVector::SelectionSort, &vector, std::ref(simActive));
+                    break;
+                case INSERTION:
+                    sortThread = std::thread(&SortVector::InsertionSort, &vector, std::ref(simActive));
                     break;
                 case BUBBLE:
-                    sortThread = std::thread(BubbleSort, std::ref(vector), std::ref(pointer), std::ref(state),
-                                             std::ref(paused), std::ref(simActive));
+                    sortThread = std::thread(&SortVector::BubbleSort, &vector, std::ref(simActive));
                     break;
                 default:
                     break;
             }
             if (simActive) {
-                paused = !DisplayAsButtonRow("Vector", vector, pointer, state, color);
+                vector.paused = !DisplayAsButtonRow("Vector", vector, color);
             }
         }
 
@@ -138,40 +137,40 @@ int main() {
 }
 
 bool
-DisplayAsButtonRow(const std::string &name, const std::vector<int> &vector, uint pointer, PTR_STATE state, int color) {
+DisplayAsButtonRow(const std::string &name, const SortVector &vector, int color) {
     static bool fastForward = false;
     ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_HorizontalScrollbar);
-    for (uint i = 0; i < vector.size(); i++) {
+    for (uint i = 0; i < vector.GetSize(); i++) {
         ImGui::PushID(i);
         if (color) {
-            if (i == pointer) {
+            if (i == vector.GetPosition()) {
                 ImGui::PushStyleColor(ImGuiCol_Button,
-                                      (ImVec4) ImColor::HSV((float) vector[i] / vector.size(), 0.95f, 0.95f));
+                                      (ImVec4) ImColor::HSV((float) vector.Get(i) / vector.GetSize(), 0.95f, 0.95f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                      (ImVec4) ImColor::HSV((float) vector[i] / vector.size(), 0.95f, 0.95f));
+                                      (ImVec4) ImColor::HSV((float) vector.Get(i) / vector.GetSize(), 0.95f, 0.95f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                                      (ImVec4) ImColor::HSV((float) vector[i] / vector.size(), 0.95f, 0.95f));
+                                      (ImVec4) ImColor::HSV((float) vector.Get(i) / vector.GetSize(), 0.95f, 0.95f));
             } else {
                 ImGui::PushStyleColor(ImGuiCol_Button,
-                                      (ImVec4) ImColor::HSV((float) vector[i] / vector.size(), 0.75f, 0.75f));
+                                      (ImVec4) ImColor::HSV((float) vector.Get(i) / vector.GetSize(), 0.75f, 0.75f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                      (ImVec4) ImColor::HSV((float) vector[i] / vector.size(), 0.75f, 0.75f));
+                                      (ImVec4) ImColor::HSV((float) vector.Get(i) / vector.GetSize(), 0.75f, 0.75f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                                      (ImVec4) ImColor::HSV((float) vector[i] / vector.size(), 0.75f, 0.75f));
+                                      (ImVec4) ImColor::HSV((float) vector.Get(i) / vector.GetSize(), 0.75f, 0.75f));
             }
             ImGui::Button("  ");
         } else {
-            if (i == pointer) {
-                ImGui::PushStyleColor(ImGuiCol_Button, StateColor(state));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, StateColor(state));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, StateColor(state));
+            if (i == vector.GetPosition()) {
+                ImGui::PushStyleColor(ImGuiCol_Button, StateColor(vector.GetState()));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, StateColor(vector.GetState()));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, StateColor(vector.GetState()));
             } else {
                 ImGui::PushStyleColor(ImGuiCol_Button, StateColor(IDLE));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, StateColor(IDLE));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, StateColor(IDLE));
             }
-            std::string buttonText = std::to_string(vector[i]);
-            int max = getMaxLength(vector);
+            std::string buttonText = std::to_string(vector.Get(i));
+            uint max = vector.GetMaxLength();
             while (buttonText.length() < max) {
                 buttonText = " " + buttonText;
             }
@@ -179,7 +178,7 @@ DisplayAsButtonRow(const std::string &name, const std::vector<int> &vector, uint
         }
         ImGui::PopStyleColor(3);
         ImGui::PopID();
-        if ((i + 1) % MAX_ROW_WIDTH && i + 1 != vector.size())
+        if ((i + 1) % MAX_ROW_WIDTH && i + 1 != vector.GetSize())
             ImGui::SameLine();
     }
     bool advance = false;
@@ -190,7 +189,7 @@ DisplayAsButtonRow(const std::string &name, const std::vector<int> &vector, uint
         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
     else
         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
-    if (pointer == 0 && state == IDLE)
+    if (vector.GetPosition() == 0 && vector.GetState() == IDLE)
         fastForward = false;
     if (ImGui::Button(">>"))
         fastForward = !fastForward;

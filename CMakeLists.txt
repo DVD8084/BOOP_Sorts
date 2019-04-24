@@ -23,7 +23,7 @@ include_directories(${SFML_DIR}/include)
 link_directories(${SFML_DIR}/lib)
 
 set(IMGUI_SOURCE "${IMGUI_DIR}/imgui.cpp" "${IMGUI_DIR}/imgui_draw.cpp" "${IMGUI_DIR}/imgui_demo.cpp" "${IMGUI_DIR}/imgui_widgets.cpp" "${IMGUI_DIR}/imgui_stdlib.cpp" "${IMGUI_DIR}/imgui-SFML.cpp")
-set(SORTS_SOURCE "auxil_vector.cpp" "auxil_vector.h" "auxil_vector.tpp" "sorts_vector.cpp" "sorts_vector.h")
+set(SORTS_SOURCE "Vector.cpp" "Vector.h" "SortVector.cpp" "SortVector.h")
 
 add_executable(${PROJECT_NAME} main.cpp ${IMGUI_SOURCE} ${SORTS_SOURCE})
 target_link_libraries(${PROJECT_NAME} sfml-audio sfml-graphics sfml-network sfml-window sfml-system opengl32)

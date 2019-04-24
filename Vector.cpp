@@ -2,7 +2,7 @@
 // Created by DVD on 16.04.2019.
 //
 
-#include "auxil_vector.h"
+#include "Vector.h"
 
 #include <algorithm>
 #include <chrono>
@@ -20,46 +20,45 @@ ImVec4 StateColor(PTR_STATE color) {
     return colors[color];
 }
 
-void Pause(bool &paused) {
+void Vector::Pause() {
     paused = true;
     while (paused) {}
 }
 
-void Pause(bool &paused, bool &active) {
+void Vector::Pause(bool &active) {
     paused = true;
     while (paused && active) {}
 }
 
-void SetState(uint &position, int newPosition, bool &paused, bool &simActive) {
+void Vector::SetState(uint newPosition, bool &active) {
     position = newPosition;
-    Pause(paused, simActive);
+    Pause(active);
 }
 
-void SetState(PTR_STATE &state, PTR_STATE newState, bool &paused, bool &simActive) {
+void Vector::SetState(PTR_STATE newState, bool &active) {
     state = newState;
-    Pause(paused, simActive);
+    Pause(active);
 }
 
-void SetState(uint &position, int newPosition, PTR_STATE &state, PTR_STATE newState, bool &paused, bool &simActive) {
+void Vector::SetState(uint newPosition, PTR_STATE newState, bool &active) {
     position = newPosition;
     state = newState;
-    Pause(paused, simActive);
+    Pause(active);
 }
 
-std::vector<int> Shuffle(const uint &size) {
-    std::vector<int> values(size, -1);
+void Vector::Shuffle(const uint &size) {
+    vector = std::vector<int>(size, -1);
     for (uint i = 0; i < size; i++) {
-        values[i] = i;
+        vector[i] = i;
     }
     std::default_random_engine rnd(std::chrono::system_clock::now().time_since_epoch().count());
-    std::shuffle(values.begin(), values.end(), rnd);
-    return values;
+    std::shuffle(vector.begin(), vector.end(), rnd);
 }
 
-std::vector<int> Shuffle(const uint &size, const std::string &values, const bool shuffle) {
+void Vector::Shuffle(const uint &size, const std::string &values, const bool shuffle) {
     unsigned long long pos = 0;
-    std::vector<int> v(size, 0);
-    for (int &i : v) {
+    vector = std::vector<int>(size, 0);
+    for (int &i : vector) {
         if (pos == std::string::npos)
             continue;
         if (pos)
@@ -69,23 +68,46 @@ std::vector<int> Shuffle(const uint &size, const std::string &values, const bool
             i = stoi(value);
         }
         catch (const std::invalid_argument &) {
-            return std::vector<int>();
+            vector = std::vector<int>();
         }
         pos = values.find(',', pos);
     }
     if (shuffle) {
         std::default_random_engine rnd(std::chrono::system_clock::now().time_since_epoch().count());
-        std::shuffle(v.begin(), v.end(), rnd);
+        std::shuffle(vector.begin(), vector.end(), rnd);
     }
-    return v;
 }
 
-int getMaxLength(const std::vector<int> &vector) {
-    int length = 0;
+uint Vector::GetMaxLength() const {
+    uint length = 0;
     for (int i : vector) {
         if (std::to_string(i).length() > length) {
             length = std::to_string(i).length();
         }
     }
     return length;
+}
+
+uint Vector::GetSize() const {
+    return vector.size();
+}
+
+int Vector::Get(uint i) const {
+    return vector.at(i);
+}
+
+void Vector::Clear() {
+    vector = std::vector<int>(0);
+}
+
+bool Vector::IsEmpty() const {
+    return vector.empty();
+}
+
+uint Vector::GetPosition() const {
+    return position;
+}
+
+PTR_STATE Vector::GetState() const {
+    return state;
 }
