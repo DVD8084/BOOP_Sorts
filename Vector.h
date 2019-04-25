@@ -32,6 +32,8 @@ private:
 
     void SetState(uint newPosition, PTR_STATE newState);
 
+    void Compare(uint i, uint j);
+
 protected:
     uint position = 0;
     PTR_STATE state;
@@ -45,8 +47,6 @@ protected:
 
     void Write(uint i, int x);
 
-    void Compare(uint i, uint j);
-
     bool Less(uint i, uint j);
 
     bool More(uint i, uint j);
@@ -58,6 +58,12 @@ protected:
     bool MoreOrEqual(uint i, uint j);
 
     void Swap(uint i, uint j);
+
+    void RegisterRead();
+
+    void RegisterWrite();
+
+    void RegisterCompare();
 
 public:
 

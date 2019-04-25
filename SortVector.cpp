@@ -45,11 +45,9 @@ void SortVector::BubbleSort() {
 
 void SortVector::InsertionSort() {
     ResetPointer();
-    int key;
     for (uint i = 1; i < GetSize(); i++) {
-        key = Read(i);
         uint j = i - 1;
-        while (j + 1 > 0 && Read(j) > key) {
+        while (j + 1 > 0 && More(j, j + 1)) {
             Swap(j, j + 1);
             j--;
         }
@@ -76,7 +74,8 @@ void SortVector::Merge(uint l, uint m, uint r) {
     k = l;
 
     while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
+        RegisterCompare();
+        if (L[i] < R[j]) {
             Write(k, L[i]);
             i++;
         } else {

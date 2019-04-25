@@ -31,6 +31,9 @@ int main() {
     font->DisplayOffset.y = -1;
     font->DisplayOffset.x = 1;
     ImGui::SFML::UpdateFontTexture();
+    ImFont *smol = io.Fonts->AddFontFromFileTTF("res\\PureProg 12.ttf", 16.0f, nullptr,
+                                                io.Fonts->GetGlyphRangesCyrillic());
+    ImGui::SFML::UpdateFontTexture();
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -168,7 +171,13 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
 
     static bool fastForward = false;
 
+    ImGuiIO io = ImGui::GetIO();
+
     ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+    ImGui::PushFont(io.Fonts->Fonts[1]);
+    ImGui::Text("Reads: %-8d  Writes: %-8d  Compares: %-8d", vector.GetRead(), vector.GetWrite(), vector.GetCompare());
+    ImGui::PopFont();
 
     for (uint i = 0; i < vector.GetSize(); i++) {
 

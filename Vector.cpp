@@ -192,3 +192,15 @@ void Vector::Swap(uint i, uint j) {
 bool Vector::IsActive() const {
     return active;
 }
+
+void Vector::RegisterRead() {
+    read++;
+}
+
+void Vector::RegisterWrite() {
+    write++;
+}
+
+void Vector::RegisterCompare() {
+    compare++;
+}
