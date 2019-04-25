@@ -10,25 +10,26 @@
 #include "Vector.h"
 
 enum ALGORITHM {
-    NONE, SELECTION, BUBBLE, INSERTION, QUICKSORT, MERGESORT
+    NONE, SELECTION, BUBBLE, INSERTION, QUICKSORT, MERGESORT, COUNTINGSORT
 };
 
 class SortVector : public Vector {
 
-// Note: In all sorting implementations, the current state of the supposed "execution pointer" needs to be displayed by calling SetState().
-// If the position-only function is called, then the state is determined by the current value of `state`, and vice versa.
-// At the start and the end of all implementations, call SetState(0, IDLE, simActive) to clear the current state.
+private:
+    void Merge(uint l, uint m, uint r);
 
 public:
-    void SelectionSort(bool &simActive);
+    void SelectionSort();
 
-    void BubbleSort(bool &simActive);
+    void BubbleSort();
 
-    void InsertionSort(bool &simActive);
+    void InsertionSort();
 
-    void QuickSort(bool &simActive);
+    void QuickSort();
 
-    void MergeSort(bool &simActive);
+    void MergeSort(uint l, uint r);
+
+    void CountingSort();
 
 };
 

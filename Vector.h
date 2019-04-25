@@ -13,7 +13,7 @@
 typedef unsigned int uint;
 
 enum PTR_STATE {
-    IDLE, READ, NOTE, SET, STATE_AMOUNT
+    IDLE, READ, WRITE, COMPARE, STATE_AMOUNT
 };
 
 // Return one of the colors used for displaying states.
@@ -21,28 +21,53 @@ ImVec4 StateColor(PTR_STATE color);
 
 class Vector {
 
-protected:
+private:
     std::vector<int> vector;
-    uint position;
-    PTR_STATE state;
 
-    // Basic "pause execution" function. Note that `paused` needs to be set to `true` from another thread for the execution to unpause.
     void Pause();
 
-    // Same as the previous function, but only works while both `paused` and `active` are `true`. Note that `active` isn't set to `true` at the start of this function.
-    void Pause(bool &active);
+    void SetState(uint newPosition);
 
-    // Sets the position of the "execution pointer" in the vector and pauses the execution if `simActive` is `true`.
-    void SetState(uint newPosition, bool &active);
+    void SetState(PTR_STATE newState);
 
-    // Sets the state of the "execution pointer" in the vector and pauses the execution if `simActive` is `true`.
-    void SetState(PTR_STATE newState, bool &active);
+    void SetState(uint newPosition, PTR_STATE newState);
 
-    // Sets both the position and the state of the "execution pointer" in the vector and pauses the execution if `simActive` is `true`.
-    void SetState(uint newPosition, PTR_STATE newState, bool &active);
+protected:
+    uint position = 0;
+    PTR_STATE state;
+    bool paused = false;
+    bool active = false;
+    uint read = 0;
+    uint write = 0;
+    uint compare = 0;
+
+    int Read(uint i);
+
+    void Write(uint i, int x);
+
+    void Compare(uint i, uint j);
+
+    bool Less(uint i, uint j);
+
+    bool More(uint i, uint j);
+
+    bool Equal(uint i, uint j);
+
+    bool LessOrEqual(uint i, uint j);
+
+    bool MoreOrEqual(uint i, uint j);
+
+    void Swap(uint i, uint j);
 
 public:
-    bool paused;
+
+    void Activate();
+
+    void Deactivate();
+
+    void Resume();
+
+    bool IsActive() const;
 
     // Fills the vector with a shuffled set of the first `size` non-negative integers.
     void Shuffle(const uint &size);
@@ -50,14 +75,17 @@ public:
     // Fills the vector with a set of the first `size` integers separated by commas from `values`, appended with zeroes if needed, and shuffled if `shuffle` is set to `true`.
     void Shuffle(const uint &size, const std::string &values, bool shuffle = true);
 
-    // Clears the vector.
+    // Clears and resets the vector.
     void Clear();
+
+    // Resets the "execution pointer".
+    void ResetPointer();
 
     // Returns the size of the vector.
     uint GetSize() const;
 
     // Returns the element at position `i`.
-    int Get(uint i) const;
+    int GetElement(uint i) const;
 
     // Returns the largest of the amounts of characters needed to display an integer from the vector.
     // Used to prepend the shorter integers by spaces when displaying.
@@ -71,6 +99,15 @@ public:
 
     // Returns the state of the "execution pointer".
     PTR_STATE GetState() const;
+
+    // Returns the amount of read operations.
+    uint GetRead() const;
+
+    // Returns the amount of write operations.
+    uint GetWrite() const;
+
+    // Returns the amount of compare operations.
+    uint GetCompare() const;
 
 };
 
