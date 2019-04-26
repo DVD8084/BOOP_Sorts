@@ -59,6 +59,7 @@ void Vector::Shuffle(const uint &size) {
     }
     std::default_random_engine rnd(static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count()));
     std::shuffle(vector.begin(), vector.end(), rnd);
+    backup = vector;
 }
 
 void Vector::Shuffle(const uint &size, const std::string &values, const bool shuffle) {
@@ -74,7 +75,7 @@ void Vector::Shuffle(const uint &size, const std::string &values, const bool shu
             i = stoi(value);
         }
         catch (const std::invalid_argument &) {
-            vector = std::vector<int>(0);
+            vector = std::vector<int>();
         }
         pos = values.find(',', pos);
     }
@@ -82,6 +83,7 @@ void Vector::Shuffle(const uint &size, const std::string &values, const bool shu
         std::default_random_engine rnd(static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count()));
         std::shuffle(vector.begin(), vector.end(), rnd);
     }
+    backup = vector;
 }
 
 uint Vector::GetMaxLength() const {
@@ -101,7 +103,7 @@ int Vector::GetElement(uint i) const {
 }
 
 void Vector::Clear() {
-    vector = std::vector<int>(0);
+    vector = std::vector<int>();
     position = 0;
     state = IDLE;
     read = 0;
@@ -222,4 +224,9 @@ void Vector::RegisterCompare() {
 
 void Vector::SetFrameskip(int i) {
     frameskip = i;
+}
+
+void Vector::Reload() {
+    Clear();
+    vector = backup;
 }

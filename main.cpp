@@ -44,6 +44,7 @@ int main() {
         static std::thread sortThread;
 
         static SortVector vector;
+        static ALGORITHM algorithm;
 
         sf::Event event;
 
@@ -54,19 +55,20 @@ int main() {
                 vector.Deactivate();
                 if (sortThread.joinable())
                     sortThread.join();
+                algorithm = NONE;
                 window.close();
             }
         }
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        static ALGORITHM algorithm;
         static std::string algName;
         static int size = 10;
         static bool setElements = false;
         static std::string elements;
         static bool shuffle = true;
         static int color = 0;
+        static bool reload = false;
 
         static int maxLength = 0;
 
@@ -78,7 +80,22 @@ int main() {
                 if (sortThread.joinable())
                     sortThread.join();
                 vector.Clear();
+                algorithm = NONE;
             }
+            if (ImGui::Button("Restart the simulation")) {
+                vector.Deactivate();
+                if (sortThread.joinable())
+                    sortThread.join();
+                vector.Reload();
+                reload = true;
+            }
+            if (shuffle || color)
+                if (ImGui::Button("Reshuffle and restart")) {
+                    vector.Deactivate();
+                    if (sortThread.joinable())
+                        sortThread.join();
+                    vector.Reload();
+                }
         } else {
             ImGui::InputInt("Size", &size);
             if (size < MIN_VECTOR_SIZE)
@@ -114,12 +131,15 @@ int main() {
 
         ImGui::End();
 
-        if (algorithm != NONE) {
-            vector.Activate();
-            if (setElements && !color) {
-                vector.Shuffle(static_cast<const uint &>(size), elements, shuffle);
-            } else {
-                vector.Shuffle(static_cast<const uint &>(size));
+        if (reload) {
+            reload = false;
+        } else {
+            if ((algorithm != NONE) && !vector.IsActive()) {
+                if (setElements && !color) {
+                    vector.Shuffle(static_cast<const uint &>(size), elements, shuffle);
+                } else {
+                    vector.Shuffle(static_cast<const uint &>(size));
+                }
             }
         }
 
@@ -127,36 +147,38 @@ int main() {
             maxLength = vector.GetMaxLength();
 
         if (!vector.IsEmpty()) {
-            switch (algorithm) {
-                case SELECTION:
-                    sortThread = std::thread(&SortVector::SelectionSort, &vector);
-                    algName = "Selection Sort";
-                    break;
-                case INSERTION:
-                    sortThread = std::thread(&SortVector::InsertionSort, &vector);
-                    algName = "Insertion Sort";
-                    break;
-                case BUBBLE:
-                    sortThread = std::thread(&SortVector::BubbleSort, &vector);
-                    algName = "Bubble Sort";
-                    break;
-                case MERGESORT:
-                    sortThread = std::thread(&SortVector::MergeSort, &vector, 0, vector.GetSize());
-                    algName = "Merge Sort";
-                    break;
-                case COUNTINGSORT:
-                    sortThread = std::thread(&SortVector::CountingSort, &vector);
-                    algName = "Counting Sort";
-                    break;
-                default:
-                    break;
-            }
-            if (vector.IsActive()) {
+            if (!vector.IsActive()) {
+                vector.Activate();
+                switch (algorithm) {
+                    case SELECTION:
+                        sortThread = std::thread(&SortVector::SelectionSort, &vector);
+                        algName = "Selection Sort";
+                        break;
+                    case INSERTION:
+                        sortThread = std::thread(&SortVector::InsertionSort, &vector);
+                        algName = "Insertion Sort";
+                        break;
+                    case BUBBLE:
+                        sortThread = std::thread(&SortVector::BubbleSort, &vector);
+                        algName = "Bubble Sort";
+                        break;
+                    case MERGESORT:
+                        sortThread = std::thread(&SortVector::MergeSort, &vector, 0, vector.GetSize());
+                        algName = "Merge Sort";
+                        break;
+                    case COUNTINGSORT:
+                        sortThread = std::thread(&SortVector::CountingSort, &vector);
+                        algName = "Counting Sort";
+                        break;
+                    default:
+                        break;
+                }
+            } else {
                 Display(algName, vector, color, maxLength);
             }
+        } else {
+            algorithm = NONE;
         }
-
-        algorithm = NONE;
 
         window.clear(clear_color);
         ImGui::SFML::Render(window);

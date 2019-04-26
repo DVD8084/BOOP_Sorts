@@ -25,6 +25,7 @@ class Vector {
 
 private:
     std::vector<int> vector;
+    std::vector<int> backup;
 
     void Pause();
 
@@ -78,6 +79,8 @@ public:
     void SetFrameskip(int i);
 
     void Resume();
+
+    void Reload();
 
     bool IsActive() const;
 
