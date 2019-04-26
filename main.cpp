@@ -231,6 +231,14 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
             ImGui::SameLine();
     }
 
+    static int frameskip = 0;
+
+    ImGui::InputInt("Frameskip      ", &frameskip);
+
+    vector.SetFrameskip(frameskip);
+
+    ImGui::SameLine();
+
     if (ImGui::Button("> "))
         vector.Resume();
 

@@ -21,8 +21,19 @@ ImVec4 StateColor(PTR_STATE color) {
 }
 
 void Vector::Pause() {
-    paused = true;
-    while (paused && active) {}
+    if (frameskip < 0)
+        frameskipCount = frameskip;
+    if (frameskipCount <= 0) {
+        while (frameskipCount <= 0) {
+            paused = true;
+            while (paused && active) {}
+            frameskipCount++;
+        }
+    } else {
+        frameskipCount++;
+    }
+    if (frameskip >= 0)
+        frameskipCount = frameskipCount % (frameskip + 1);
 }
 
 void Vector::SetState(uint newPosition) {
@@ -96,11 +107,15 @@ void Vector::Clear() {
     read = 0;
     write = 0;
     compare = 0;
+    frameskip = 0;
+    frameskipCount = 0;
     paused = false;
     active = false;
 }
 
 void Vector::ResetPointer() {
+    frameskip = 0;
+    frameskipCount = 0;
     SetState(0, IDLE);
 }
 
@@ -203,4 +218,8 @@ void Vector::RegisterWrite() {
 
 void Vector::RegisterCompare() {
     compare++;
+}
+
+void Vector::SetFrameskip(int i) {
+    frameskip = i;
 }

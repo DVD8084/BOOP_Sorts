@@ -10,6 +10,8 @@
 #include <iostream>
 #include <vector>
 
+#define FRAMESKIP 2;
+
 typedef unsigned int uint;
 
 enum PTR_STATE {
@@ -38,6 +40,8 @@ protected:
     uint position = 0;
     PTR_STATE state;
     bool paused = false;
+    int frameskip = 0;
+    int frameskipCount = 0;
     bool active = false;
     uint read = 0;
     uint write = 0;
@@ -70,6 +74,8 @@ public:
     void Activate();
 
     void Deactivate();
+
+    void SetFrameskip(int i);
 
     void Resume();
 
