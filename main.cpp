@@ -14,8 +14,7 @@
 
 #define MAX_ROW_WIDTH 20
 #define MIN_VECTOR_SIZE 2
-#define MAX_VECTOR_SIZE 100
-#define MAX_VECTOR_SIZE_COLOR 400
+#define MAX_VECTOR_SIZE 400
 
 bool Display(const std::string &name, SortVector &vector, int color, uint buttonLength);
 
@@ -100,16 +99,13 @@ int main() {
             ImGui::InputInt("Size", &size);
             if (size < MIN_VECTOR_SIZE)
                 size = MIN_VECTOR_SIZE;
-            if (color) {
-                if (size > MAX_VECTOR_SIZE_COLOR)
-                    size = MAX_VECTOR_SIZE_COLOR;
-            } else {
-                if (size > MAX_VECTOR_SIZE)
-                    size = MAX_VECTOR_SIZE;
-            }
+            if (size > MAX_VECTOR_SIZE)
+                size = MAX_VECTOR_SIZE;
             ImGui::RadioButton("Numbers", &color, 0);
             ImGui::SameLine();
             ImGui::RadioButton("Colors", &color, 1);
+            ImGui::SameLine();
+            ImGui::RadioButton("Both", &color, 2);
             if (!color) {
                 ImGui::Checkbox("Set Elements", &setElements);
                 if (setElements) {
@@ -193,12 +189,15 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
 
     static bool fastForward = false;
 
+    static char buffer[12];
+
     ImGuiIO io = ImGui::GetIO();
 
     ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::PushFont(io.Fonts->Fonts[1]);
-    ImGui::Text("Reads: %-8d  Writes: %-8d  Compares: %-8d", vector.GetRead(), vector.GetWrite(), vector.GetCompare());
+    ImGui::Text("Reads: %-10d  Writes: %-10d  Compares: %-10d",
+                vector.GetRead(), vector.GetWrite(), vector.GetCompare());
     ImGui::PopFont();
 
     for (uint i = 0; i < vector.GetSize(); i++) {
@@ -208,26 +207,25 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
         if (color) {
             if (i == vector.GetPosition()) {
                 ImGui::PushStyleColor(ImGuiCol_Button,
-                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(), 0.95f,
-                                                            0.95f));
+                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(),
+                                                            1.0f, 1.0f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(), 0.95f,
-                                                            0.95f));
+                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(),
+                                                            1.0f, 1.0f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(), 0.95f,
-                                                            0.95f));
+                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(),
+                                                            1.0f, 1.0f));
             } else {
                 ImGui::PushStyleColor(ImGuiCol_Button,
-                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(), 0.75f,
-                                                            0.75f));
+                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(),
+                                                            0.7f, 0.7f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(), 0.75f,
-                                                            0.75f));
+                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(),
+                                                            0.7f, 0.7f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(), 0.75f,
-                                                            0.75f));
+                                      (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(),
+                                                            0.7f, 0.7f));
             }
-            ImGui::Button("  ");
         } else {
             if (i == vector.GetPosition()) {
                 ImGui::PushStyleColor(ImGuiCol_Button, StateColor(vector.GetState()));
@@ -238,14 +236,20 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, StateColor(IDLE));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, StateColor(IDLE));
             }
-            std::string buttonText = std::to_string(vector.GetElement(i));
-            while (buttonText.length() < buttonLength) {
-                buttonText = " " + buttonText;
-            }
-            ImGui::Button(buttonText.c_str());
+        }
+        if (color == 2)
+            ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(),
+                                                                       0.50f, 1.00f));
+        if (color == 1) {
+            ImGui::Button("  ");
+        } else {
+            sprintf(buffer, "%*d", buttonLength, vector.GetElement(i));
+            ImGui::Button(buffer);
         }
 
         ImGui::PopStyleColor(3);
+        if (color == 2)
+            ImGui::PopStyleColor();
 
         ImGui::PopID();
 
