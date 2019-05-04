@@ -7,15 +7,17 @@
 #include <algorithm>
 #include <chrono>
 #include <iostream>
+#include <map>
 #include <random>
+#include <utility>
 #include <vector>
 
 ImVec4 StateColor(PTR_STATE color) {
     static const ImVec4 colors[STATE_AMOUNT] = {
             ImVec4(0.25f, 0.50f, 0.50f, 1.00f), //IDLE
-            ImVec4(0.25f, 1.00f, 0.25f, 1.00f), //READ
-            ImVec4(1.00f, 0.25f, 0.25f, 1.00f), //WRITE
-            ImVec4(1.00f, 1.00f, 0.25f, 1.00f)  //COMPARE
+            ImVec4(0.25f, 0.75f, 0.25f, 1.00f), //READ
+            ImVec4(0.75f, 0.25f, 0.25f, 1.00f), //WRITE
+            ImVec4(0.75f, 0.75f, 0.25f, 1.00f)  //COMPARE
     };
     return colors[color];
 }
@@ -28,6 +30,8 @@ void Vector::Pause() {
             paused = true;
             while (paused && active) {}
             frameskipCount++;
+            if (frameskip >= 0)
+                frameskipCount = 1;
         }
     } else {
         frameskipCount++;
@@ -36,19 +40,9 @@ void Vector::Pause() {
         frameskipCount = frameskipCount % (frameskip + 1);
 }
 
-void Vector::SetState(uint newPosition) {
-    position = newPosition;
-    Pause();
-}
 
-void Vector::SetState(PTR_STATE newState) {
-    state = newState;
-    Pause();
-}
-
-void Vector::SetState(uint newPosition, PTR_STATE newState) {
-    position = newPosition;
-    state = newState;
+void Vector::SetState(const std::initializer_list<ExecPointer> &newPointers) {
+    pointers = std::map<uint, PTR_STATE>(newPointers);
     Pause();
 }
 
@@ -103,52 +97,49 @@ int Vector::GetElement(uint i) const {
 }
 
 void Vector::Clear() {
-    vector = std::vector<int>();
-    position = 0;
-    state = IDLE;
+    vector.clear();
+    pointers.clear();
     read = 0;
     write = 0;
     compare = 0;
+    swap = 0;
     frameskip = 0;
     frameskipCount = 0;
     paused = false;
     active = false;
 }
 
-void Vector::ResetPointer() {
+void Vector::ResetPointers() {
     frameskip = 0;
     frameskipCount = 0;
-    SetState(0, IDLE);
+    SetState({});
 }
 
 bool Vector::IsEmpty() const {
     return vector.empty();
 }
 
-uint Vector::GetPosition() const {
-    return position;
+std::map<uint, PTR_STATE> Vector::GetPointers() const {
+    return pointers;
 }
 
-PTR_STATE Vector::GetState() const {
-    return state;
-}
 
 int Vector::Read(uint i) {
     read++;
-    SetState(i, READ);
+    SetState({{i, READ}});
     return vector.at(i);
 }
 
 void Vector::Write(uint i, int x) {
     write++;
-    SetState(i, WRITE);
+    SetState({{i, WRITE}});
     vector.at(i) = x;
 }
 
 void Vector::Compare(uint i, uint j) {
     compare++;
-    SetState(i, COMPARE);
-    SetState(j, COMPARE);
+    SetState({{i, COMPARE},
+              {j, COMPARE}});
 }
 
 bool Vector::Less(uint i, uint j) {
@@ -188,6 +179,10 @@ uint Vector::GetCompare() const {
     return compare;
 }
 
+uint Vector::GetSwap() const {
+    return swap;
+}
+
 void Vector::Activate() {
     active = true;
 }
@@ -201,25 +196,18 @@ void Vector::Resume() {
 }
 
 void Vector::Swap(uint i, uint j) {
-    int buf = Read(i);
-    Write(i, Read(j));
-    Write(j, buf);
+    if (i != j) {
+        int buf = vector[i];
+        vector[i] = vector[j];
+        vector[j] = buf;
+        swap++;
+        SetState({{i, WRITE},
+                  {j, WRITE}});
+    }
 }
 
 bool Vector::IsActive() const {
     return active;
-}
-
-void Vector::RegisterRead() {
-    read++;
-}
-
-void Vector::RegisterWrite() {
-    write++;
-}
-
-void Vector::RegisterCompare() {
-    compare++;
 }
 
 void Vector::SetFrameskip(int i) {
@@ -229,4 +217,8 @@ void Vector::SetFrameskip(int i) {
 void Vector::Reload() {
     Clear();
     vector = backup;
+}
+
+bool Vector::StateHasNotChanged() const {
+    return frameskipCount < 0;
 }

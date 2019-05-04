@@ -10,7 +10,7 @@
 typedef unsigned int uint;
 
 void SortVector::SelectionSort() {
-    ResetPointer();
+    ResetPointers();
     uint min;
     for (uint i = 0; i + 1 < GetSize(); i++) {
         min = i;
@@ -21,11 +21,11 @@ void SortVector::SelectionSort() {
         }
         Swap(i, min);
     }
-    ResetPointer();
+    ResetPointers();
 }
 
 void SortVector::BubbleSort() {
-    ResetPointer();
+    ResetPointers();
     bool swapOccured;
     for (uint i = 0; i + 1 < GetSize(); i++) {
         swapOccured = false;
@@ -36,15 +36,15 @@ void SortVector::BubbleSort() {
             }
         }
         if (!swapOccured) {
-            ResetPointer();
+            ResetPointers();
             return;
         }
     }
-    ResetPointer();
+    ResetPointers();
 }
 
 void SortVector::InsertionSort() {
-    ResetPointer();
+    ResetPointers();
     for (uint i = 1; i < GetSize(); i++) {
         uint j = i - 1;
         while (j + 1 > 0 && More(j, j + 1)) {
@@ -52,55 +52,47 @@ void SortVector::InsertionSort() {
             j--;
         }
     }
-    ResetPointer();
+    ResetPointers();
 }
 
 void SortVector::Merge(uint l, uint m, uint r) {
-    uint i, j, k;
+    uint i = 0, j = 0, k = 0;
     uint n1 = m - l;
     uint n2 = r - m;
 
-    std::vector<int> L(n1), R(n2);
-
-    for (i = 0; i < n1; i++) {
-        L[i] = Read(l + i);
-    }
-    for (j = 0; j < n2; j++) {
-        R[j] = Read(m + j);
-    }
-
-    i = 0;
-    j = 0;
-    k = l;
+    std::vector<int> copy(r - l);
 
     while (i < n1 && j < n2) {
-        RegisterCompare();
-        if (L[i] < R[j]) {
-            Write(k, L[i]);
-            i++;
-        } else {
-            Write(k, R[j]);
+        if (Less(m + j, l + i)) {
+            copy[k] = Read(m + j);
             j++;
+        } else {
+            copy[k] = Read(l + i);
+            i++;
         }
         k++;
     }
 
     while (i < n1) {
-        Write(k, L[i]);
+        copy[k] = Read(l + i);
         i++;
         k++;
     }
 
     while (j < n2) {
-        Write(k, R[j]);
+        copy[k] = Read(m + j);
         j++;
         k++;
+    }
+
+    for (k = 0; k < r - l; k++) {
+        Write(k + l, copy[k]);
     }
 }
 
 void SortVector::MergeSort(uint l, uint r) {
     if (l == 0 && r == GetSize()) {
-        ResetPointer();
+        ResetPointers();
     }
     if (l + 1 < r) {
         uint m = l + (r - l) / 2;
@@ -111,12 +103,43 @@ void SortVector::MergeSort(uint l, uint r) {
         Merge(l, m, r);
     }
     if (l == 0 && r == GetSize()) {
-        ResetPointer();
+        ResetPointers();
+    }
+}
+
+uint SortVector::Partition(uint l, uint r) {
+    uint pivot = r;
+    uint i = l - 1;
+
+    for (uint j = l; j < r; j++) {
+        if (LessOrEqual(j, pivot)) {
+            i++;
+            Swap(i, j);
+        }
+    }
+
+    i++;
+    Swap(i, r);
+    return i;
+}
+
+void SortVector::QuickSort(uint l, uint r) {
+    if (l == 0 && r == GetSize()) {
+        ResetPointers();
+    }
+    if (l + 1 < r) {
+        uint p = Partition(l, r - 1);
+
+        QuickSort(l, p);
+        QuickSort(p + 1, r);
+    }
+    if (l == 0 && r == GetSize()) {
+        ResetPointers();
     }
 }
 
 void SortVector::CountingSort() {
-    ResetPointer();
+    ResetPointers();
 
     int max = 0;
     int min = 0;
@@ -149,5 +172,5 @@ void SortVector::CountingSort() {
     for (uint i = 0; i < GetSize(); i++)
         Write(i, output[i]);
 
-    ResetPointer();
+    ResetPointers();
 }

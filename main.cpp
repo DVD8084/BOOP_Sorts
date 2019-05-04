@@ -119,6 +119,8 @@ int main() {
                 algorithm = INSERTION;
             if (ImGui::Button("Bubble Sort"))
                 algorithm = BUBBLE;
+            if (ImGui::Button("Quick Sort"))
+                algorithm = QUICKSORT;
             if (ImGui::Button("Merge Sort"))
                 algorithm = MERGESORT;
             if (ImGui::Button("Counting Sort"))
@@ -158,6 +160,10 @@ int main() {
                         sortThread = std::thread(&SortVector::BubbleSort, &vector);
                         algName = "Bubble Sort";
                         break;
+                    case QUICKSORT:
+                        sortThread = std::thread(&SortVector::QuickSort, &vector, 0, vector.GetSize());
+                        algName = "QuickSort";
+                        break;
                     case MERGESORT:
                         sortThread = std::thread(&SortVector::MergeSort, &vector, 0, vector.GetSize());
                         algName = "Merge Sort";
@@ -196,8 +202,8 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
     ImGui::Begin(name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::PushFont(io.Fonts->Fonts[1]);
-    ImGui::Text("Reads: %-10d  Writes: %-10d  Compares: %-10d",
-                vector.GetRead(), vector.GetWrite(), vector.GetCompare());
+    ImGui::Text("Reads: %-10d  Writes: %-10d  Compares: %-10d  Swaps: %-10d",
+                vector.GetRead(), vector.GetWrite(), vector.GetCompare(), vector.GetSwap());
     ImGui::PopFont();
 
     for (uint i = 0; i < vector.GetSize(); i++) {
@@ -205,7 +211,7 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
         ImGui::PushID(i);
 
         if (color) {
-            if (i == vector.GetPosition()) {
+            if (vector.GetPointers().count(i)) {
                 ImGui::PushStyleColor(ImGuiCol_Button,
                                       (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(),
                                                             1.0f, 1.0f));
@@ -227,10 +233,11 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
                                                             0.7f, 0.7f));
             }
         } else {
-            if (i == vector.GetPosition()) {
-                ImGui::PushStyleColor(ImGuiCol_Button, StateColor(vector.GetState()));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, StateColor(vector.GetState()));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, StateColor(vector.GetState()));
+            if (vector.GetPointers().count(i)) {
+                auto p = vector.GetPointers().find(i);
+                ImGui::PushStyleColor(ImGuiCol_Button, StateColor(p->second));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, StateColor(p->second));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, StateColor(p->second));
             } else {
                 ImGui::PushStyleColor(ImGuiCol_Button, StateColor(IDLE));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, StateColor(IDLE));
@@ -265,8 +272,12 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
 
     ImGui::SameLine();
 
-    if (ImGui::Button("> "))
+    if (ImGui::Button("> ")) {
+        if (frameskip < 0)
+            while (vector.StateHasNotChanged())
+                vector.Resume();
         vector.Resume();
+    }
 
     ImGui::SameLine();
 
@@ -275,7 +286,7 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
     else
         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
 
-    if (vector.GetPosition() == 0 && vector.GetState() == IDLE)
+    if (vector.GetPointers().empty())
         fastForward = false;
 
     if (ImGui::Button(">>"))

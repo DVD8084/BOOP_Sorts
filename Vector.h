@@ -8,6 +8,7 @@
 #include "imgui\imgui.h"
 
 #include <iostream>
+#include <map>
 #include <vector>
 
 #define FRAMESKIP 2;
@@ -17,6 +18,8 @@ typedef unsigned int uint;
 enum PTR_STATE {
     IDLE, READ, WRITE, COMPARE, STATE_AMOUNT
 };
+
+typedef std::pair<const uint, PTR_STATE> ExecPointer;
 
 // Return one of the colors used for displaying states.
 ImVec4 StateColor(PTR_STATE color);
@@ -29,17 +32,12 @@ private:
 
     void Pause();
 
-    void SetState(uint newPosition);
-
-    void SetState(PTR_STATE newState);
-
-    void SetState(uint newPosition, PTR_STATE newState);
+    void SetState(const std::initializer_list<ExecPointer> &newPointers);
 
     void Compare(uint i, uint j);
 
 protected:
-    uint position = 0;
-    PTR_STATE state;
+    std::map<uint, PTR_STATE> pointers;
     bool paused = false;
     int frameskip = 0;
     int frameskipCount = 0;
@@ -47,6 +45,7 @@ protected:
     uint read = 0;
     uint write = 0;
     uint compare = 0;
+    uint swap = 0;
 
     int Read(uint i);
 
@@ -63,12 +62,6 @@ protected:
     bool MoreOrEqual(uint i, uint j);
 
     void Swap(uint i, uint j);
-
-    void RegisterRead();
-
-    void RegisterWrite();
-
-    void RegisterCompare();
 
 public:
 
@@ -94,7 +87,7 @@ public:
     void Clear();
 
     // Resets the "execution pointer".
-    void ResetPointer();
+    void ResetPointers();
 
     // Returns the size of the vector.
     uint GetSize() const;
@@ -109,11 +102,8 @@ public:
     // Returns `true` if the vector is empty.
     bool IsEmpty() const;
 
-    // Returns the position of the "execution pointer".
-    uint GetPosition() const;
-
-    // Returns the state of the "execution pointer".
-    PTR_STATE GetState() const;
+    // Returns the positions and states of the "execution pointers".
+    std::map<uint, PTR_STATE> GetPointers() const;
 
     // Returns the amount of read operations.
     uint GetRead() const;
@@ -123,6 +113,11 @@ public:
 
     // Returns the amount of compare operations.
     uint GetCompare() const;
+
+    // Returns the amount of swap operations.
+    uint GetSwap() const;
+
+    bool StateHasNotChanged() const;
 
 };
 

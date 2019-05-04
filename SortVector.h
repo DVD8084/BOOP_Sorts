@@ -16,6 +16,8 @@ enum ALGORITHM {
 class SortVector : public Vector {
 
 private:
+    uint Partition(uint l, uint r);
+
     void Merge(uint l, uint m, uint r);
 
 public:
@@ -25,7 +27,7 @@ public:
 
     void InsertionSort();
 
-    void QuickSort();
+    void QuickSort(uint l, uint r);
 
     void MergeSort(uint l, uint r);
 
