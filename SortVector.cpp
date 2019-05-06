@@ -5,6 +5,7 @@
 #include "SortVector.h"
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 
 typedef unsigned int uint;
@@ -160,7 +161,7 @@ void SortVector::CountingSort() {
     for (uint i = 0; i < GetSize(); i++)
         count[Read(i) - min]++;
 
-    for (uint i = 1; i < count.size(); i++)
+    for (uint i = 1; i < range; i++)
         count[i] += count[i - 1];
 
     for (uint i = 0; i < GetSize(); i++) {
@@ -171,6 +172,106 @@ void SortVector::CountingSort() {
 
     for (uint i = 0; i < GetSize(); i++)
         Write(i, output[i]);
+
+    ResetPointers();
+}
+
+void SortVector::CountingLSDSubSort(int min, uint base, int exp) {
+    std::vector<int> output(GetSize()), count(base);
+    int mod = 0;
+
+    for (uint i = 0; i < GetSize(); i++) {
+        count[((Read(i) - min) / exp) % base]++;
+    }
+
+    for (uint i = 1; i < base; i++)
+        count[i] += count[i - 1];
+
+    for (uint i = GetSize(); i > 0; i--) {
+        int cur = Read(i - 1);
+        mod = ((cur - min) / exp) % base;
+        output[count[mod] - 1] = cur;
+        count[mod]--;
+    }
+
+    for (uint i = 0; i < GetSize(); i++)
+        Write(i, output[i]);
+}
+
+void SortVector::RadixLSDSort(uint base) {
+    ResetPointers();
+
+    int max = 0;
+    int min = 0;
+
+    for (uint i = 0; i < GetSize(); i++) {
+        int cur = Read(i);
+        if (cur > max) {
+            max = cur;
+        }
+        if (cur < min) {
+            min = cur;
+        }
+    }
+
+    max -= min;
+
+    for (int exp = 1; max / exp > 0; exp *= base)
+        CountingLSDSubSort(min, base, exp);
+
+    ResetPointers();
+}
+
+void SortVector::RadixMSDSubSort(int min, uint base, int exp, uint l, uint r) {
+    if (l + 1 < r) {
+        std::vector<int> output(GetSize()), count(base), lefts(base, l), rights(base, r);
+        int mod = 0;
+
+        for (uint i = l; i < r; i++) {
+            count[((Read(i) - min) / exp) % base]++;
+        }
+
+        for (uint i = 1; i < base; i++) {
+            lefts[i] = l + count[i - 1];
+            rights[i - 1] = l + count[i - 1];
+            count[i] += count[i - 1];
+        }
+
+        for (uint i = r; i > l; i--) {
+            int cur = Read(i - 1);
+            mod = ((cur - min) / exp) % base;
+            output[count[mod] - 1] = cur;
+            count[mod]--;
+        }
+
+        for (uint i = l; i < r; i++)
+            Write(i, output[i - l]);
+
+        for (uint i = 0; i < base; i++)
+            RadixMSDSubSort(min, base, exp / base, lefts[i], rights[i]);
+    }
+}
+
+void SortVector::RadixMSDSort(uint base, uint l, uint r) {
+    ResetPointers();
+
+    int max = 0;
+    int min = 0;
+
+    for (uint i = 0; i < GetSize(); i++) {
+        int cur = Read(i);
+        if (cur > max) {
+            max = cur;
+        }
+        if (cur < min) {
+            min = cur;
+        }
+    }
+
+    max -= min;
+
+    int exp = (int) pow(base, trunc(log(max) / log(base)));
+    RadixMSDSubSort(min, base, exp, l, r);
 
     ResetPointers();
 }

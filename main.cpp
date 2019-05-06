@@ -12,9 +12,9 @@
 #include "Vector.h"
 #include "SortVector.h"
 
-#define MAX_ROW_WIDTH 20
+#define DEFAULT_ROW_WIDTH 20
 #define MIN_VECTOR_SIZE 2
-#define MAX_VECTOR_SIZE 400
+#define MAX_VECTOR_SIZE 500
 
 bool Display(const std::string &name, SortVector &vector, int color, uint buttonLength);
 
@@ -67,6 +67,8 @@ int main() {
         static std::string elements;
         static bool shuffle = true;
         static int color = 0;
+        static int base = 10;
+        static bool radix = false;
         static bool reload = false;
 
         static int maxLength = 0;
@@ -119,12 +121,33 @@ int main() {
                 algorithm = INSERTION;
             if (ImGui::Button("Bubble Sort"))
                 algorithm = BUBBLE;
-            if (ImGui::Button("Quick Sort"))
+            if (ImGui::Button("QuickSort"))
                 algorithm = QUICKSORT;
             if (ImGui::Button("Merge Sort"))
                 algorithm = MERGESORT;
             if (ImGui::Button("Counting Sort"))
                 algorithm = COUNTINGSORT;
+            if (ImGui::Button("Radix LSD Sort")) {
+                if (radix) {
+                    algorithm = RADIXLSDSORT;
+                    radix = false;
+                } else {
+                    radix = true;
+                }
+            }
+            if (ImGui::Button("Radix MSD Sort")) {
+                if (radix) {
+                    algorithm = RADIXMSDSORT;
+                    radix = false;
+                } else {
+                    radix = true;
+                }
+            }
+            if (radix) {
+                ImGui::InputInt("Radix", &base);
+                if (base < 2)
+                    base = 2;
+            }
         }
 
         ImGui::End();
@@ -172,6 +195,15 @@ int main() {
                         sortThread = std::thread(&SortVector::CountingSort, &vector);
                         algName = "Counting Sort";
                         break;
+                    case RADIXLSDSORT:
+                        sortThread = std::thread(&SortVector::RadixLSDSort, &vector, static_cast<uint>(base));
+                        algName = "Radix LSD Sort (base " + std::to_string(base) + ")";
+                        break;
+                    case RADIXMSDSORT:
+                        sortThread = std::thread(&SortVector::RadixMSDSort, &vector, static_cast<uint>(base), 0,
+                                                 vector.GetSize());
+                        algName = "Radix MSD Sort (base " + std::to_string(base) + ")";
+                        break;
                     default:
                         break;
                 }
@@ -194,6 +226,8 @@ int main() {
 bool Display(const std::string &name, SortVector &vector, int color, uint buttonLength) {
 
     static bool fastForward = false;
+
+    static int rowWidth = DEFAULT_ROW_WIDTH;
 
     static char buffer[12];
 
@@ -260,7 +294,7 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
 
         ImGui::PopID();
 
-        if ((i + 1) % MAX_ROW_WIDTH && i + 1 != vector.GetSize())
+        if ((i + 1) % rowWidth && i + 1 != vector.GetSize())
             ImGui::SameLine();
     }
 
@@ -296,6 +330,10 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
         vector.Resume();
 
     ImGui::PopStyleColor();
+
+    ImGui::InputInt("Width", &rowWidth);
+    if (rowWidth < 1)
+        rowWidth = 1;
 
     ImGui::End();
 
