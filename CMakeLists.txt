@@ -7,11 +7,11 @@ project(${PROJECT_NAME})
 set(CMAKE_CXX_STANDARD 11)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(SFML_DIR "C:/SFML-2.5.1-release")
+    set(SFML_DIR "../lib/SFML-2.5.1-release")
 endif()
 
 if(NOT SFML_DIR)
-    set(SFML_DIR "C:/SFML-2.5.1-debug")
+    set(SFML_DIR "../lib/SFML-2.5.1-debug")
 endif()
 
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
