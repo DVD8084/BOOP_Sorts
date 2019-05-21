@@ -245,7 +245,7 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
         ImGui::PushID(i);
 
         if (color) {
-            if (vector.GetPointers().count(i)) {
+            if (vector.GetIterators().count(i)) {
                 ImGui::PushStyleColor(ImGuiCol_Button,
                                       (ImVec4) ImColor::HSV((float) vector.GetElement(i) / vector.GetSize(),
                                                             1.0f, 1.0f));
@@ -267,8 +267,8 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
                                                             0.7f, 0.7f));
             }
         } else {
-            if (vector.GetPointers().count(i)) {
-                auto p = vector.GetPointers().find(i);
+            if (vector.GetIterators().count(i)) {
+                auto p = vector.GetIterators().find(i);
                 ImGui::PushStyleColor(ImGuiCol_Button, StateColor(p->second));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, StateColor(p->second));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, StateColor(p->second));
@@ -320,7 +320,7 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
     else
         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
 
-    if (vector.GetPointers().empty())
+    if (vector.GetIterators().empty())
         fastForward = false;
 
     if (ImGui::Button(">>"))

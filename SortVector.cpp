@@ -11,7 +11,7 @@
 typedef unsigned int uint;
 
 void SortVector::SelectionSort() {
-    ResetPointers();
+    ResetIterators();
     uint min;
     for (uint i = 0; i + 1 < GetSize(); i++) {
         min = i;
@@ -22,11 +22,11 @@ void SortVector::SelectionSort() {
         }
         Swap(i, min);
     }
-    ResetPointers();
+    ResetIterators();
 }
 
 void SortVector::BubbleSort() {
-    ResetPointers();
+    ResetIterators();
     bool swapOccured;
     for (uint i = 0; i + 1 < GetSize(); i++) {
         swapOccured = false;
@@ -37,15 +37,15 @@ void SortVector::BubbleSort() {
             }
         }
         if (!swapOccured) {
-            ResetPointers();
+            ResetIterators();
             return;
         }
     }
-    ResetPointers();
+    ResetIterators();
 }
 
 void SortVector::InsertionSort() {
-    ResetPointers();
+    ResetIterators();
     for (uint i = 1; i < GetSize(); i++) {
         uint j = i - 1;
         while (j + 1 > 0 && More(j, j + 1)) {
@@ -53,7 +53,7 @@ void SortVector::InsertionSort() {
             j--;
         }
     }
-    ResetPointers();
+    ResetIterators();
 }
 
 void SortVector::Merge(uint l, uint m, uint r) {
@@ -93,7 +93,7 @@ void SortVector::Merge(uint l, uint m, uint r) {
 
 void SortVector::MergeSort(uint l, uint r) {
     if (l == 0 && r == GetSize()) {
-        ResetPointers();
+        ResetIterators();
     }
     if (l + 1 < r) {
         uint m = l + (r - l) / 2;
@@ -104,7 +104,7 @@ void SortVector::MergeSort(uint l, uint r) {
         Merge(l, m, r);
     }
     if (l == 0 && r == GetSize()) {
-        ResetPointers();
+        ResetIterators();
     }
 }
 
@@ -126,7 +126,7 @@ uint SortVector::Partition(uint l, uint r) {
 
 void SortVector::QuickSort(uint l, uint r) {
     if (l == 0 && r == GetSize()) {
-        ResetPointers();
+        ResetIterators();
     }
     if (l + 1 < r) {
         uint p = Partition(l, r - 1);
@@ -135,12 +135,12 @@ void SortVector::QuickSort(uint l, uint r) {
         QuickSort(p + 1, r);
     }
     if (l == 0 && r == GetSize()) {
-        ResetPointers();
+        ResetIterators();
     }
 }
 
 void SortVector::CountingSort() {
-    ResetPointers();
+    ResetIterators();
 
     int max = 0;
     int min = 0;
@@ -173,7 +173,7 @@ void SortVector::CountingSort() {
     for (uint i = 0; i < GetSize(); i++)
         Write(i, output[i]);
 
-    ResetPointers();
+    ResetIterators();
 }
 
 void SortVector::CountingLSDSubSort(int min, uint base, int exp) {
@@ -199,7 +199,7 @@ void SortVector::CountingLSDSubSort(int min, uint base, int exp) {
 }
 
 void SortVector::RadixLSDSort(uint base) {
-    ResetPointers();
+    ResetIterators();
 
     int max = 0;
     int min = 0;
@@ -219,7 +219,7 @@ void SortVector::RadixLSDSort(uint base) {
     for (int exp = 1; max / exp > 0; exp *= base)
         CountingLSDSubSort(min, base, exp);
 
-    ResetPointers();
+    ResetIterators();
 }
 
 void SortVector::RadixMSDSubSort(int min, uint base, int exp, uint l, uint r) {
@@ -253,7 +253,7 @@ void SortVector::RadixMSDSubSort(int min, uint base, int exp, uint l, uint r) {
 }
 
 void SortVector::RadixMSDSort(uint base, uint l, uint r) {
-    ResetPointers();
+    ResetIterators();
 
     int max = 0;
     int min = 0;
@@ -273,5 +273,5 @@ void SortVector::RadixMSDSort(uint base, uint l, uint r) {
     int exp = (int) pow(base, trunc(log(max) / log(base)));
     RadixMSDSubSort(min, base, exp, l, r);
 
-    ResetPointers();
+    ResetIterators();
 }

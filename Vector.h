@@ -11,18 +11,15 @@
 #include <map>
 #include <vector>
 
-#define FRAMESKIP 2;
-
 typedef unsigned int uint;
 
-enum PTR_STATE {
+enum ITER_STATE {
     IDLE, READ, WRITE, COMPARE, STATE_AMOUNT
 };
 
-typedef std::pair<const uint, PTR_STATE> ExecPointer;
+typedef std::pair<const uint, ITER_STATE> ExecIterator;
 
-// Return one of the colors used for displaying states.
-ImVec4 StateColor(PTR_STATE color);
+ImVec4 StateColor(ITER_STATE color);
 
 class Vector {
 
@@ -32,12 +29,12 @@ private:
 
     void Pause();
 
-    void SetState(const std::initializer_list<ExecPointer> &newPointers);
+    void SetState(const std::initializer_list<ExecIterator> &newIterators);
 
     void Compare(uint i, uint j);
 
 protected:
-    std::map<uint, PTR_STATE> pointers;
+    std::map<uint, ITER_STATE> iterators;
     bool paused = false;
     int frameskip = 0;
     int frameskipCount = 0;
@@ -77,44 +74,30 @@ public:
 
     bool IsActive() const;
 
-    // Fills the vector with a shuffled set of the first `size` non-negative integers.
     void Shuffle(const uint &size);
 
-    // Fills the vector with a set of the first `size` integers separated by commas from `values`, appended with zeroes if needed, and shuffled if `shuffle` is set to `true`.
     void Shuffle(const uint &size, const std::string &values, bool shuffle = true);
 
-    // Clears and resets the vector.
     void Clear();
 
-    // Resets the "execution pointer".
-    void ResetPointers();
+    void ResetIterators();
 
-    // Returns the size of the vector.
     uint GetSize() const;
 
-    // Returns the element at position `i`.
     int GetElement(uint i) const;
 
-    // Returns the largest of the amounts of characters needed to display an integer from the vector.
-    // Used to prepend the shorter integers by spaces when displaying.
     uint GetMaxLength() const;
 
-    // Returns `true` if the vector is empty.
     bool IsEmpty() const;
 
-    // Returns the positions and states of the "execution pointers".
-    std::map<uint, PTR_STATE> GetPointers() const;
+    std::map<uint, ITER_STATE> GetIterators() const;
 
-    // Returns the amount of read operations.
     uint GetRead() const;
 
-    // Returns the amount of write operations.
     uint GetWrite() const;
 
-    // Returns the amount of compare operations.
     uint GetCompare() const;
 
-    // Returns the amount of swap operations.
     uint GetSwap() const;
 
     bool StateHasNotChanged() const;
