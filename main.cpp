@@ -1,11 +1,14 @@
-#include "imgui/imgui.h"
-#include "imgui/imgui_stdlib.h"
-#include "imgui/imgui-SFML.h"
+#include <imgui.h>
+#include <imgui_stdlib.h>
+#include <imgui-SFML.h>
+
+#include <json.hpp>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 
+#include <fstream>
 #include <iostream>
 #include <thread>
 
@@ -16,10 +19,14 @@
 #define MIN_VECTOR_SIZE 2
 #define MAX_VECTOR_SIZE 500
 
+using json = nlohmann::json;
+
 bool Display(const std::string &name, SortVector &vector, int color, uint buttonLength);
 
+bool DisplayInfo(const std::string &name);
+
 int main() {
-    sf::RenderWindow window(sf::VideoMode(1280, 800), "Sorts");
+    sf::RenderWindow window(sf::VideoMode::getFullscreenModes()[0], "Sorts", sf::Style::Fullscreen);
     window.setVerticalSyncEnabled(true);
 
     ImGui::SFML::Init(window, false);
@@ -32,6 +39,8 @@ int main() {
     ImGui::SFML::UpdateFontTexture();
     ImFont *smol = io.Fonts->AddFontFromFileTTF("res\\PureProg 12.ttf", 16.0f, nullptr,
                                                 io.Fonts->GetGlyphRangesCyrillic());
+    ImFont *big = io.Fonts->AddFontFromFileTTF("res\\PureProg 12.ttf", 32.0f, nullptr,
+                                               io.Fonts->GetGlyphRangesCyrillic());
     ImGui::SFML::UpdateFontTexture();
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -57,16 +66,24 @@ int main() {
                 algorithm = NONE;
                 window.close();
             }
+
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)) {
+                vector.Deactivate();
+                if (sortThread.joinable())
+                    sortThread.join();
+                algorithm = NONE;
+                window.close();
+            }
         }
 
         ImGui::SFML::Update(window, deltaClock.restart());
 
         static std::string algName;
-        static int size = 10;
+        static int size = 100;
         static bool setElements = false;
         static std::string elements;
         static bool shuffle = true;
-        static int color = 0;
+        static int color = 2;
         static int base = 10;
         static bool radix = false;
         static bool reload = false;
@@ -148,6 +165,9 @@ int main() {
                 if (base < 2)
                     base = 2;
             }
+            if (ImGui::Button("Exit")) {
+                window.close();
+            }
         }
 
         ImGui::End();
@@ -226,6 +246,8 @@ int main() {
 bool Display(const std::string &name, SortVector &vector, int color, uint buttonLength) {
 
     static bool fastForward = false;
+
+    static bool infoOpened = false;
 
     static int rowWidth = DEFAULT_ROW_WIDTH;
 
@@ -306,7 +328,7 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
 
     ImGui::SameLine();
 
-    if (ImGui::Button("> ")) {
+    if (ImGui::Button(">")) {
         if (frameskip < 0)
             while (vector.StateHasNotChanged())
                 vector.Resume();
@@ -326,6 +348,17 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
     if (ImGui::Button(">>"))
         fastForward = !fastForward;
 
+    if (!infoOpened) {
+        ImGui::SameLine();
+        if (ImGui::Button("Info")) {
+            infoOpened = true;
+        }
+    } else {
+        if (!DisplayInfo(name)) {
+            infoOpened = false;
+        }
+    }
+
     if (fastForward)
         vector.Resume();
 
@@ -337,4 +370,54 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
 
     ImGui::End();
 
+}
+
+bool DisplayInfo(const std::string &name) {
+    std::string path = name;
+    if (path.substr(7, 7) == "SD Sort") {
+        path = path.substr(0, 14);
+    }
+
+    bool closed = false;
+
+    ImGuiIO io = ImGui::GetIO();
+
+    ImGui::Begin((path + " Info").c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+    try {
+        std::ifstream infoFile("json/" + path + ".json");
+        json info;
+        infoFile >> info;
+
+        ImGui::PushFont(io.Fonts->Fonts[2]);
+        ImGui::Text("%s", info["name"].get<std::string>().c_str());
+        ImGui::PopFont();
+
+        json text = info["text"];
+
+        for (const auto &line : text.items()) {
+            if (line.value() == "{code}") {
+                ImGui::PushFont(io.Fonts->Fonts[1]);
+                ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4) ImColor(0.9f, 0.9f, 0.9f));
+            } else if (line.value() == "{/code}") {
+                ImGui::PopStyleColor();
+                ImGui::PopFont();
+            } else {
+                ImGui::Text("%s", line.value().get<std::string>().c_str());
+            }
+        }
+
+        infoFile.close();
+    }
+    catch (const nlohmann::detail::parse_error &error) {
+        ImGui::Text("%s", error.what());
+    }
+
+    if (ImGui::Button("Close")) {
+        closed = true;
+    }
+
+    ImGui::End();
+
+    return !closed;
 }

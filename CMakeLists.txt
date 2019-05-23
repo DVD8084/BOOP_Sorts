@@ -6,6 +6,8 @@ project(${PROJECT_NAME})
 
 set(CMAKE_CXX_STANDARD 11)
 
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(SFML_DIR "../lib/SFML-2.5.1-release")
 endif()
@@ -14,11 +16,14 @@ if(NOT SFML_DIR)
     set(SFML_DIR "../lib/SFML-2.5.1-debug")
 endif()
 
-set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
+set(IMGUI_DIR "../lib/imgui")
+
+set(JSON_DIR "../lib/nlohmann_json")
 
 find_package(SFML REQUIRED audio graphics network window system)
 
-include_directories(${IMGUI_DIR}/include)
+include_directories(${IMGUI_DIR})
+include_directories(${JSON_DIR})
 include_directories(${SFML_DIR}/include)
 link_directories(${SFML_DIR}/lib)
 
