@@ -378,6 +378,8 @@ bool DisplayInfo(const std::string &name) {
         path = path.substr(0, 14);
     }
 
+    int codeCount = 0;
+
     bool closed = false;
 
     ImGuiIO io = ImGui::GetIO();
@@ -399,9 +401,11 @@ bool DisplayInfo(const std::string &name) {
             if (line.value() == "{code}") {
                 ImGui::PushFont(io.Fonts->Fonts[1]);
                 ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4) ImColor(0.9f, 0.9f, 0.9f));
+                ++codeCount;
             } else if (line.value() == "{/code}") {
                 ImGui::PopStyleColor();
                 ImGui::PopFont();
+                --codeCount;
             } else {
                 ImGui::Text("%s", line.value().get<std::string>().c_str());
             }
@@ -411,6 +415,12 @@ bool DisplayInfo(const std::string &name) {
     }
     catch (const nlohmann::detail::parse_error &error) {
         ImGui::Text("%s", error.what());
+    }
+
+    while (codeCount) {
+        ImGui::PopStyleColor();
+        ImGui::PopFont();
+        --codeCount;
     }
 
     if (ImGui::Button("Close")) {
