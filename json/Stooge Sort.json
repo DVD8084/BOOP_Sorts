@@ -1,0 +1,20 @@
+{
+  "name": "Template Sort",
+  "best-case": "n^(log(3)/log(1.5))",
+  "average-case": "n^(log(3)/log(1.5))",
+  "worst-case": "n^(log(3)/log(1.5))",
+  "text": [
+    " * Note: log(3)/log(1.5) is about 2.7095, so Stooge Sort is even slower than Bubble Sort.",
+    "",
+    "The Stooge sort is a recursive sorting algorithm. It is defined as below (for ascending order sorting):",
+    "",
+    "Step 1: If value at index 0 is greater than",
+    "        value at last index, swap them.",
+    "Step 2: Recursively, ",
+    "     a) Stooge sort the initial 2/3rd of the array.",
+    "     b) Stooge sort the last 2/3rd of the array.",
+    "     c) Stooge sort the initial 2/3rd again to confirm.",
+    "",
+    "Note: Always take the ceil of ((2/3)*N) for selecting elements."
+  ]
+}

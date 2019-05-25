@@ -1,0 +1,14 @@
+{
+  "name": "Template Sort",
+  "best-case": "1",
+  "average-case": "1",
+  "worst-case": "1",
+  "text": [
+    "This is some regular text.",
+    "",
+    "{header}",
+    "This is a header.",
+    "{/header}",
+    "This is regular text again."
+  ]
+}
