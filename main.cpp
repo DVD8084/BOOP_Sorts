@@ -18,6 +18,8 @@
 #define DEFAULT_ROW_WIDTH 20
 #define MIN_VECTOR_SIZE 2
 #define MAX_VECTOR_SIZE 500
+#define MIN_FRAMESKIP -100
+#define MAX_FRAMESKIP 1000
 
 using json = nlohmann::json;
 
@@ -32,15 +34,20 @@ int main() {
     ImGui::SFML::Init(window, false);
     ImGuiIO &io = ImGui::GetIO();
     //io.Fonts->AddFontDefault();
-    ImFont *font = io.Fonts->AddFontFromFileTTF("res\\PureProg 12.ttf", 24.0f, nullptr,
-                                                io.Fonts->GetGlyphRangesCyrillic());
+
+    ImVector<ImWchar> ranges;
+    ImFontGlyphRangesBuilder builder;
+    builder.AddChar(0x0398); // THETA
+    builder.AddChar(0x03a9); // OMEGA
+    builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
+    builder.BuildRanges(&ranges);
+
+    ImFont *font = io.Fonts->AddFontFromFileTTF("res\\PureProg 12.ttf", 24.0f, nullptr, ranges.Data);
     font->DisplayOffset.y = -1;
     font->DisplayOffset.x = 1;
-    ImGui::SFML::UpdateFontTexture();
-    ImFont *smol = io.Fonts->AddFontFromFileTTF("res\\PureProg 12.ttf", 16.0f, nullptr,
-                                                io.Fonts->GetGlyphRangesCyrillic());
-    ImFont *big = io.Fonts->AddFontFromFileTTF("res\\PureProg 12.ttf", 32.0f, nullptr,
-                                               io.Fonts->GetGlyphRangesCyrillic());
+    ImFont *smol = io.Fonts->AddFontFromFileTTF("res\\PureProg 12.ttf", 16.0f, nullptr, ranges.Data);
+    ImFont *big = io.Fonts->AddFontFromFileTTF("res\\PureProg 12.ttf", 32.0f, nullptr, ranges.Data);
+
     ImGui::SFML::UpdateFontTexture();
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -138,15 +145,21 @@ int main() {
                 algorithm = INSERTION;
             if (ImGui::Button("Bubble Sort"))
                 algorithm = BUBBLE;
+            if (ImGui::Button("Cocktail Sort"))
+                algorithm = COCKTAIL;
+            if (ImGui::Button("Comb Sort"))
+                algorithm = COMB;
+            if (ImGui::Button("ShellSort"))
+                algorithm = SHELLSORT;
             if (ImGui::Button("QuickSort"))
                 algorithm = QUICKSORT;
             if (ImGui::Button("Merge Sort"))
                 algorithm = MERGESORT;
             if (ImGui::Button("Counting Sort"))
-                algorithm = COUNTINGSORT;
+                algorithm = COUNTING;
             if (ImGui::Button("Radix LSD Sort")) {
                 if (radix) {
-                    algorithm = RADIXLSDSORT;
+                    algorithm = RADIXLSD;
                     radix = false;
                 } else {
                     radix = true;
@@ -154,7 +167,7 @@ int main() {
             }
             if (ImGui::Button("Radix MSD Sort")) {
                 if (radix) {
-                    algorithm = RADIXMSDSORT;
+                    algorithm = RADIXMSD;
                     radix = false;
                 } else {
                     radix = true;
@@ -165,6 +178,10 @@ int main() {
                 if (base < 2)
                     base = 2;
             }
+            if (ImGui::Button("Stooge Sort"))
+                algorithm = STOOGE;
+            if (ImGui::Button("BogoSort"))
+                algorithm = BOGOSORT;
             if (ImGui::Button("Exit")) {
                 window.close();
             }
@@ -203,6 +220,18 @@ int main() {
                         sortThread = std::thread(&SortVector::BubbleSort, &vector);
                         algName = "Bubble Sort";
                         break;
+                    case COCKTAIL:
+                        sortThread = std::thread(&SortVector::CocktailSort, &vector);
+                        algName = "Cocktail Sort";
+                        break;
+                    case COMB:
+                        sortThread = std::thread(&SortVector::CombSort, &vector);
+                        algName = "Comb Sort";
+                        break;
+                    case SHELLSORT:
+                        sortThread = std::thread(&SortVector::ShellSort, &vector);
+                        algName = "ShellSort";
+                        break;
                     case QUICKSORT:
                         sortThread = std::thread(&SortVector::QuickSort, &vector, 0, vector.GetSize());
                         algName = "QuickSort";
@@ -211,20 +240,31 @@ int main() {
                         sortThread = std::thread(&SortVector::MergeSort, &vector, 0, vector.GetSize());
                         algName = "Merge Sort";
                         break;
-                    case COUNTINGSORT:
+                    case COUNTING:
                         sortThread = std::thread(&SortVector::CountingSort, &vector);
                         algName = "Counting Sort";
                         break;
-                    case RADIXLSDSORT:
+                    case RADIXLSD:
                         sortThread = std::thread(&SortVector::RadixLSDSort, &vector, static_cast<uint>(base));
                         algName = "Radix LSD Sort (base " + std::to_string(base) + ")";
                         break;
-                    case RADIXMSDSORT:
+                    case RADIXMSD:
                         sortThread = std::thread(&SortVector::RadixMSDSort, &vector, static_cast<uint>(base), 0,
                                                  vector.GetSize());
                         algName = "Radix MSD Sort (base " + std::to_string(base) + ")";
                         break;
+                    case STOOGE:
+                        sortThread = std::thread(&SortVector::StoogeSort, &vector, 0, vector.GetSize());
+                        algName = "Stooge Sort";
+                        break;
+                    case BOGOSORT:
+                        sortThread = std::thread(&SortVector::BogoSort, &vector);
+                        algName = "BogoSort";
+                        break;
                     default:
+                        algorithm = NONE;
+                        vector.Deactivate();
+                        vector.Clear();
                         break;
                 }
             } else {
@@ -323,6 +363,10 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
     static int frameskip = 0;
 
     ImGui::InputInt("Frameskip      ", &frameskip);
+    if (frameskip < MIN_FRAMESKIP)
+        frameskip = MIN_FRAMESKIP;
+    if (frameskip > MAX_FRAMESKIP)
+        frameskip = MAX_FRAMESKIP;
 
     vector.SetFrameskip(frameskip);
 
@@ -348,6 +392,8 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
     if (ImGui::Button(">>"))
         fastForward = !fastForward;
 
+    ImGui::PopStyleColor();
+
     if (!infoOpened) {
         ImGui::SameLine();
         if (ImGui::Button("Info")) {
@@ -362,7 +408,6 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
     if (fastForward)
         vector.Resume();
 
-    ImGui::PopStyleColor();
 
     ImGui::InputInt("Width", &rowWidth);
     if (rowWidth < 1)
@@ -374,11 +419,11 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
 
 bool DisplayInfo(const std::string &name) {
     std::string path = name;
-    if (path.substr(7, 7) == "SD Sort") {
+    if (path.substr(7, 7) == "SD Sort") { // Radix LSD and MSD sorts have the "base X" label. We need to get rid of that
         path = path.substr(0, 14);
     }
 
-    int codeCount = 0;
+    bool headerMode = false;
 
     bool closed = false;
 
@@ -395,32 +440,45 @@ bool DisplayInfo(const std::string &name) {
         ImGui::Text("%s", info["name"].get<std::string>().c_str());
         ImGui::PopFont();
 
+        ImGui::PushFont(io.Fonts->Fonts[1]);
+        ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4) ImColor(0.9f, 0.9f, 0.9f));
+        ImGui::Text(u8"Time complexity: Ω(%s) (best), Θ(%s) (average), O(%s) (worst)",
+                    info["best-case"].get<std::string>().c_str(),
+                    info["average-case"].get<std::string>().c_str(),
+                    info["worst-case"].get<std::string>().c_str());
+
+        ImGui::Text("");
+
         json text = info["text"];
 
         for (const auto &line : text.items()) {
-            if (line.value() == "{code}") {
+            if (line.value() == "{/header}" && headerMode) {
                 ImGui::PushFont(io.Fonts->Fonts[1]);
                 ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4) ImColor(0.9f, 0.9f, 0.9f));
-                ++codeCount;
-            } else if (line.value() == "{/code}") {
+                headerMode = false;
+            } else if (line.value() == "{header}" && !headerMode) {
                 ImGui::PopStyleColor();
                 ImGui::PopFont();
-                --codeCount;
+                headerMode = true;
             } else {
                 ImGui::Text("%s", line.value().get<std::string>().c_str());
             }
         }
 
         infoFile.close();
+
+        ImGui::Text("");
+
+        if (!headerMode) {
+            ImGui::PopStyleColor();
+            ImGui::PopFont();
+        }
     }
     catch (const nlohmann::detail::parse_error &error) {
         ImGui::Text("%s", error.what());
     }
-
-    while (codeCount) {
-        ImGui::PopStyleColor();
-        ImGui::PopFont();
-        --codeCount;
+    catch (const nlohmann::detail::type_error &error) {
+        ImGui::Text("%s", error.what());
     }
 
     if (ImGui::Button("Close")) {

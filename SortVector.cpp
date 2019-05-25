@@ -4,9 +4,9 @@
 
 #include "SortVector.h"
 
-#include <algorithm>
+#include <chrono>
 #include <cmath>
-#include <utility>
+#include <random>
 
 typedef unsigned int uint;
 
@@ -27,20 +27,82 @@ void SortVector::SelectionSort() {
 
 void SortVector::BubbleSort() {
     ResetIterators();
-    bool swapOccured;
+    bool swapped;
     for (uint i = 0; i + 1 < GetSize(); i++) {
-        swapOccured = false;
+        swapped = false;
         for (uint j = 0; j + i + 1 < GetSize(); j++) {
             if (More(j, j + 1)) {
                 Swap(j, j + 1);
-                swapOccured = true;
+                swapped = true;
             }
         }
-        if (!swapOccured) {
+        if (!swapped) {
             ResetIterators();
             return;
         }
     }
+    ResetIterators();
+}
+
+void SortVector::CocktailSort() {
+    ResetIterators();
+
+    bool swapped = true;
+    uint start = 0;
+    uint end = GetSize() - 1;
+
+    while (swapped) {
+        swapped = false;
+
+        for (uint i = start; i < end; i++) {
+            if (More(i, i + 1)) {
+                Swap(i, i + 1);
+                swapped = true;
+            }
+        }
+
+        if (!swapped)
+            break;
+
+        swapped = false;
+
+        --end;
+
+        for (uint i = end; i > start; i--) {
+            if (More(i - 1, i)) {
+                Swap(i - 1, i);
+                swapped = true;
+            }
+        }
+
+        ++start;
+    }
+
+    ResetIterators();
+}
+
+void SortVector::CombSort() {
+    ResetIterators();
+
+    uint gap = GetSize();
+
+    bool swapped = true;
+
+    while (gap != 1 || swapped) {
+        gap = gap * 10 / 13;
+        if (gap < 1)
+            gap = 1;
+
+        swapped = false;
+
+        for (uint i = 0; i < GetSize() - gap; i++) {
+            if (More(i, i + gap)) {
+                Swap(i, i + gap);
+                swapped = true;
+            }
+        }
+    }
+
     ResetIterators();
 }
 
@@ -51,6 +113,20 @@ void SortVector::InsertionSort() {
         while (j + 1 > 0 && More(j, j + 1)) {
             Swap(j, j + 1);
             j--;
+        }
+    }
+    ResetIterators();
+}
+
+void SortVector::ShellSort() {
+    ResetIterators();
+    for (uint gap = GetSize() / 2; gap > 0; gap /= 2) {
+        for (uint i = gap; i < GetSize(); i++) {
+            uint j = i - gap;
+            while (j + gap > j && More(j, j + gap)) {
+                Swap(j, j + gap);
+                j -= gap;
+            }
         }
     }
     ResetIterators();
@@ -274,4 +350,61 @@ void SortVector::RadixMSDSort(uint base, uint l, uint r) {
     RadixMSDSubSort(min, base, exp, l, r);
 
     ResetIterators();
+}
+
+void SortVector::StoogeSort(uint l, uint r) {
+    if (l == 0 && r == GetSize()) {
+        ResetIterators();
+    }
+
+    if (l + 2 > r || !IsActive())
+        return;
+
+    if (More(l, r - 1))
+        Swap(l, r - 1);
+
+    if (r - l > 2) {
+        uint t = (r - l) / 3;
+
+        StoogeSort(l, r - t);
+        StoogeSort(l + t, r);
+        StoogeSort(l, r - t);
+    }
+
+    if (l == 0 && r == GetSize()) {
+        ResetIterators();
+    }
+}
+
+void SortVector::BogoSort() {
+    ResetIterators();
+
+    bool sorted;
+
+    do {
+        sorted = true;
+
+        for (uint i = 1; i < GetSize(); i++)
+            if (More(i - 1, i)) {
+                sorted = false;
+                break;
+            }
+
+        if (!sorted)
+            BogoShuffle();
+    } while (!sorted && IsActive());
+
+
+    ResetIterators();
+}
+
+void SortVector::BogoShuffle() {
+    std::default_random_engine rnd(static_cast<uint>(std::chrono::system_clock::now().time_since_epoch().count()));
+    double d;
+
+    for (uint i = 0; i < GetSize(); i++) {
+        d = std::generate_canonical<double, std::numeric_limits<double>::digits>(rnd);
+        d *= (GetSize() - i);
+        Swap(i, i + (uint) d);
+    }
 }

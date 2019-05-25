@@ -1,5 +1,8 @@
 {
   "name": "Merge Sort",
+  "best-case": "n×log(n)",
+  "average-case": "n×log(n)",
+  "worst-case": "n×log(n)",
   "text": [
     "Like QuickSort, Merge Sort is a Divide and Conquer algorithm.",
     "It divides the input array in two halves, calls itself for the two halves and then",
@@ -7,9 +10,10 @@
     "The merge(arr, l, m, r) is key process that assumes that arr[l..m] and arr[m+1..r]",
     "are sorted and merges the two sorted sub-arrays into one.",
     "",
+    "{header}",
     "Example pseudocode:",
+    "{/header}",
     "",
-    "{code}",
     "MergeSort(arr[], l, r)",
     "If r > l:",
     "    1. Find the middle point to divide the array into two halves:",
@@ -19,8 +23,6 @@
     "    3. Call mergeSort for second half:",
     "        Call mergeSort(arr, m + 1, r)",
     "    4. Merge the two halves sorted in step 2 and 3:",
-    "        Call merge(arr, l, m, r)",
-    "{/code}",
-    ""
+    "        Call merge(arr, l, m, r)"
   ]
 }

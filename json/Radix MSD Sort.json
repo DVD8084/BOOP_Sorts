@@ -1,6 +1,25 @@
 {
   "name": "Radix MSD Sort",
+  "best-case": "n×k",
+  "average-case": "n×k",
+  "worst-case": "n×k",
   "text": [
-    "WIP."
+    " * Note: here k means the maximum number of digits needed to store any number in the input range.",
+    "",
+    "{header}",
+    "MSD stands for Most Significant Digit.",
+    "{/header}",
+    "The idea of Radix MSD Sort is to do digit by digit sort starting from most significant digit to least significant digit.",
+    "Radix MSD Sort is usually used for alphabetic sorting of words.",
+    "This implementation, however, prepends the numbers by zeroes so that it'd work for numbers as well.",
+    "Like Radix LSD Sort, Radix MSD Sort uses counting sort as a subroutine to sort.",
+    "",
+    "{header}",
+    "The Radix MSD Sort Algorithm",
+    "{/header}",
+    "",
+    "1) Sort the input array using counting sort (or any stable sort) according to the leftmost unsorted digit.",
+    "2) Split the array into several sub-arrays according to the sorted digit.",
+    "3) Run Radix MSD Sort recursively for each sorted subarray if it has more than 1 element."
   ]
 }

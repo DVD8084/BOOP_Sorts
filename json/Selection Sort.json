@@ -1,5 +1,8 @@
 {
   "name": "Selection Sort",
+  "best-case": "n²",
+  "average-case": "n²",
+  "worst-case": "n²",
   "text": [
     "The selection sort algorithm sorts an array by repeatedly finding the minimum",
     "element (considering ascending order) from unsorted part and putting it at the",
@@ -10,9 +13,10 @@
     "In every iteration of selection sort, the minimum element (considering ascending",
     "order) from the unsorted subarray is picked and moved to the sorted subarray.",
     "",
-    "Following example explains the above steps:",
+    "{header}",
+    "Example:",
+    "{/header}",
     "",
-    "{code}",
     "arr[] = 64 25 12 22 11",
     "",
     "// Find the minimum element in arr[0...4]",
@@ -29,8 +33,6 @@
     "",
     "// Find the minimum element in arr[3...4]",
     "// and place it at beginning of arr[3...4]",
-    "11 12 22 [25] 64",
-    "{/code}",
-    ""
+    "11 12 22 [25] 64"
   ]
 }

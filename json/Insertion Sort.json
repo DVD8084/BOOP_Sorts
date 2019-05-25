@@ -1,13 +1,17 @@
 {
   "name": "Insertion Sort",
+  "best-case": "n",
+  "average-case": "n²",
+  "worst-case": "n²",
   "text": [
     "Insertion sort is a simple sorting algorithm that works the way we sort",
     "playing cards in our hands. In every iteration of insertion sort, the",
     "ith element is picked and moved to the sorted subarray [0..i-1].",
     "",
+    "{header}",
     "Example:",
+    "{/header}",
     "",
-    "{code}",
     "arr[] = 12 11 13 5 6",
     "",
     "// Let us loop for i = 1 (second element of the array)",
@@ -29,8 +33,6 @@
     "// i = 4. 6 will move to position after 5,",
     "// and elements from 11 to 13 will move one",
     "// position ahead of their current position.",
-    "5 [6] 11 12 13",
-    "{/code}",
-    ""
+    "5 [6] 11 12 13"
   ]
 }

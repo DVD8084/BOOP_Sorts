@@ -10,7 +10,8 @@
 #include "Vector.h"
 
 enum ALGORITHM {
-    NONE, SELECTION, BUBBLE, INSERTION, QUICKSORT, MERGESORT, COUNTINGSORT, RADIXLSDSORT, RADIXMSDSORT
+    NONE, SELECTION, BUBBLE, INSERTION, QUICKSORT, MERGESORT, COUNTING, RADIXLSD, RADIXMSD, COCKTAIL, COMB, SHELLSORT,
+    STOOGE, BOGOSORT
 };
 
 class SortVector : public Vector {
@@ -23,6 +24,8 @@ private:
     void CountingLSDSubSort(int min, uint base, int exp);
 
     void RadixMSDSubSort(int min, uint base, int exp, uint l, uint r);
+
+    void BogoShuffle();
 
 public:
     void SelectionSort();
@@ -40,6 +43,16 @@ public:
     void RadixLSDSort(uint base);
 
     void RadixMSDSort(uint base, uint l, uint r);
+
+    void CocktailSort();
+
+    void CombSort();
+
+    void ShellSort();
+
+    void StoogeSort(uint l, uint r);
+
+    void BogoSort();
 
 };
 
