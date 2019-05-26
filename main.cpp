@@ -28,7 +28,7 @@ bool Display(const std::string &name, SortVector &vector, int color, uint button
 bool DisplayInfo(const std::string &name);
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode::getFullscreenModes()[0], "Sorts", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode(1280, 800), "Sorts", sf::Style::Default);
     window.setVerticalSyncEnabled(true);
 
     ImGui::SFML::Init(window, false);
@@ -61,6 +61,8 @@ int main() {
         static SortVector vector;
         static ALGORITHM algorithm;
 
+        static bool fullscreenMode = false;
+
         sf::Event event;
 
         while (window.pollEvent(event)) {
@@ -80,6 +82,20 @@ int main() {
                     sortThread.join();
                 algorithm = NONE;
                 window.close();
+            }
+
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::F11)) {
+                if (fullscreenMode) {
+                    window.create(sf::VideoMode(1280, 800), "Sorts", sf::Style::Default);
+                } else {
+                    window.create(sf::VideoMode::getFullscreenModes()[0], "Sorts", sf::Style::Fullscreen);
+                }
+                window.setVerticalSyncEnabled(true);
+
+                ImGui::SFML::Init(window, false);
+                ImGui::SFML::UpdateFontTexture();
+
+                fullscreenMode = !fullscreenMode;
             }
         }
 
