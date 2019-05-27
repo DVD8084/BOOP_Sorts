@@ -26,14 +26,6 @@ class Vector {
 private:
     std::vector<int> vector;
     std::vector<int> backup;
-
-    void Pause();
-
-    void SetState(const std::initializer_list<ExecIterator> &newIterators);
-
-    void Compare(uint i, uint j);
-
-protected:
     std::map<uint, ITER_STATE> iterators;
     bool paused = false;
     int frameskip = 0;
@@ -43,6 +35,14 @@ protected:
     uint write = 0;
     uint compare = 0;
     uint swap = 0;
+
+    void Pause();
+
+    void SetState(const std::initializer_list<ExecIterator> &newIterators);
+
+    void Compare(uint i, uint j);
+
+protected:
 
     int Read(uint i);
 
@@ -59,6 +59,8 @@ protected:
     bool MoreOrEqual(uint i, uint j);
 
     void Swap(uint i, uint j);
+
+    void ResetIterators();
 
 public:
 
@@ -79,8 +81,6 @@ public:
     void Shuffle(const uint &size, const std::string &values, bool shuffle = true);
 
     void Clear();
-
-    void ResetIterators();
 
     uint GetSize() const;
 
