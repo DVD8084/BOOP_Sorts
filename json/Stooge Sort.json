@@ -1,5 +1,5 @@
 {
-  "name": "Template Sort",
+  "name": "Stooge Sort",
   "best-case": "n^(log(3)/log(1.5))",
   "average-case": "n^(log(3)/log(1.5))",
   "worst-case": "n^(log(3)/log(1.5))",
